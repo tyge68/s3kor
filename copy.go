@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -139,7 +138,6 @@ func (cp BucketCopier) optimizeStorageClass(size int64) string {
 
 func (cp *BucketCopier) copyFile(file fileJob) {
 	var logger = zap.S()
-	fmt.Println("copyFile: " + cp.source.Path + " " + file.path)
 
 	f, err := os.Open(cp.source.Path + "/" + file.path)
 	if err != nil {
@@ -152,8 +150,6 @@ func (cp *BucketCopier) copyFile(file fileJob) {
 		}
 	} else {
 		var key = toVariationKey(file.path)
-		fmt.Println("Dest Path:" + cp.dest.Path)
-		fmt.Println("AWS Key:" + key)
 		// Upload the file to S3.
 		input := cp.template
 		input.Key = aws.String(key)
@@ -162,9 +158,7 @@ func (cp *BucketCopier) copyFile(file fileJob) {
 		if cp.optimize != nil {
 			input.StorageClass = aws.String(cp.optimizeStorageClass(file.info.Size()))
 		}
-		fmt.Println("Upload start! " + *input.Key)
 		_, err = cp.uploadManager.Upload(&input)
-		fmt.Println("Upload done! " + *input.Key)
 
 		if err != nil {
 			cp.errors <- copyError{
@@ -265,7 +259,6 @@ func toVariationKey(input string) string {
 		lastIndex := strings.LastIndexByte(input, '/')
 		if lastIndex > 0 {
 			var variation = input[:lastIndex] + CFM_GQL_JSON_VARIATIONS + "/" + input[lastIndex+1:]
-			fmt.Println("toVariationKey: " + variation)
 			return variation
 		}
 	}
