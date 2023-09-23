@@ -151,10 +151,12 @@ func (cp *BucketCopier) copyFile(file fileJob) {
 			}
 		}
 	} else {
-		fmt.Println("AWS Key:" + toVariationKey(file.path))
+		var key = toVariationKey(file.path)
+		fmt.Println("Dest Path:" + cp.dest.Path)
+		fmt.Println("AWS Key:" + key)
 		// Upload the file to S3.
 		input := cp.template
-		input.Key = aws.String(cp.dest.Path + "/" + file.path)
+		input.Key = aws.String(key)
 		input.Body = f
 
 		if cp.optimize != nil {
@@ -260,7 +262,9 @@ func toVariationKey(input string) string {
 	if !strings.HasSuffix(input, CFM_GQL_JSON) {
 		lastIndex := strings.LastIndexByte(input, '/')
 		if lastIndex > 0 {
-			return input[:lastIndex] + CFM_GQL_JSON_VARIATIONS + "/" + input[lastIndex+1:]
+			var variation = input[:lastIndex] + CFM_GQL_JSON_VARIATIONS + "/" + input[lastIndex+1:]
+			fmt.Println("toVariationKey: " + variation)
+			return variation
 		}
 	}
 	return input
