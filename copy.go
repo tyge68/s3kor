@@ -245,6 +245,13 @@ func (pb copyPb) updateBarListObjects(fileSize <-chan objectCounter) {
 	}
 }
 
+func checkAndReplaceSubstring(input, substring, replacement string) string {
+	if strings.Contains(input, substring) {
+		return strings.Replace(input, substring, replacement, -1)
+	}
+	return input
+}
+
 func (cp *BucketCopier) downloadObjects() func(object *s3.Object) {
 	var dirs sync.Map
 	theSeparator := string(os.PathSeparator)
@@ -253,7 +260,7 @@ func (cp *BucketCopier) downloadObjects() func(object *s3.Object) {
 		defer cp.threads.release(1)
 		start := time.Now()
 		// Check File path and dir
-		theFilePath := cp.dest.Path + theSeparator + *object.Key
+		theFilePath := cp.dest.Path + theSeparator + checkAndReplaceSubstring(*object.Key, ".cfm.gql/variations/", "/")
 
 		theDir := filepath.Dir(theFilePath)
 
