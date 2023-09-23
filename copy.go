@@ -277,7 +277,7 @@ func (cp *BucketCopier) downloadObjects() func(object *s3.Object) {
 				}
 				if err != nil {
 					_, file, line, _ := runtime.Caller(1)
-					fmt.Println("ERROR: " + err.Error() + " " + file + " " + strconv.Itoa(line))
+					fmt.Println("ERROR1: " + err.Error() + " " + file + " " + strconv.Itoa(line))
 					cp.errors <- copyError{error: err}
 					return
 				}
@@ -297,6 +297,8 @@ func (cp *BucketCopier) downloadObjects() func(object *s3.Object) {
 
 		theFile, err := os.Create(theFilePath)
 		if err != nil {
+			_, file, line, _ := runtime.Caller(1)
+			fmt.Println("ERROR2: " + err.Error() + " " + file + " " + strconv.Itoa(line))
 			cp.errors <- copyError{error: err}
 			return
 		}
@@ -308,6 +310,8 @@ func (cp *BucketCopier) downloadObjects() func(object *s3.Object) {
 
 		objectSize, err := cp.downloadManager.Download(theFile, &downloadInput)
 		if err != nil {
+			_, file, line, _ := runtime.Caller(1)
+			fmt.Println("ERROR3: " + err.Error() + " " + file + " " + strconv.Itoa(line))
 			cp.errors <- copyError{
 				error:    err,
 				download: &downloadInput,
@@ -319,6 +323,8 @@ func (cp *BucketCopier) downloadObjects() func(object *s3.Object) {
 
 		err = theFile.Close()
 		if err != nil {
+			_, file, line, _ := runtime.Caller(1)
+			fmt.Println("ERROR4: " + err.Error() + " " + file + " " + strconv.Itoa(line))
 			cp.errors <- copyError{error: err}
 			return
 		}
