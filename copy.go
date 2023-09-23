@@ -151,6 +151,7 @@ func (cp *BucketCopier) copyFile(file fileJob) {
 			}
 		}
 	} else {
+		fmt.Println("AWS Key:" + cp.dest.Path + "/" + file.path)
 		// Upload the file to S3.
 		input := cp.template
 		input.Key = aws.String(cp.dest.Path + "/" + file.path)
