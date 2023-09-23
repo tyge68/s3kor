@@ -162,6 +162,7 @@ func (cp *BucketCopier) copyFile(file fileJob) {
 		if cp.optimize != nil {
 			input.StorageClass = aws.String(cp.optimizeStorageClass(file.info.Size()))
 		}
+		fmt.Println("Upload start! " + *input.Key)
 		_, err = cp.uploadManager.Upload(&input)
 		fmt.Println("Upload done! " + *input.Key)
 
