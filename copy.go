@@ -141,7 +141,7 @@ func (cp *BucketCopier) copyFile(file fileJob) {
 	var logger = zap.S()
 	fmt.Println("copyFile: " + cp.source.Path + " " + file.path)
 
-	f, err := os.Open(filepath.Join(filepath.Dir(cp.source.Path), file.path))
+	f, err := os.Open(cp.source.Path + "/" + file.path)
 	if err != nil {
 		logger.Errorf("failed to open file %q, %v", file, err)
 
