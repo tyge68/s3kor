@@ -141,7 +141,7 @@ func (cp *BucketCopier) copyFile(file fileJob) {
 	var logger = zap.S()
 	fmt.Println("copyFile: " + cp.source.Path + " " + file.path)
 
-	f, err := os.Open(filepath.Join(filepath.Dir(cp.source.Path), filepath.Base(file.path)))
+	f, err := os.Open(filepath.Join(filepath.Dir(cp.source.Path), file.path))
 	if err != nil {
 		logger.Errorf("failed to open file %q, %v", file, err)
 
@@ -153,7 +153,7 @@ func (cp *BucketCopier) copyFile(file fileJob) {
 	} else {
 		// Upload the file to S3.
 		input := cp.template
-		input.Key = aws.String(cp.dest.Path + "/" + filepath.Base(file.path))
+		input.Key = aws.String(cp.dest.Path + "/" + file.path)
 		input.Body = f
 
 		if cp.optimize != nil {
