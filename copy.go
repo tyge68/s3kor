@@ -139,14 +139,13 @@ func (cp BucketCopier) optimizeStorageClass(size int64) string {
 
 func (cp *BucketCopier) copyFile(file fileJob) {
 	var logger = zap.S()
+	fmt.Println("copyFile: " + cp.source.Path + " " + file.path)
 
 	f, err := os.Open(filepath.Join(filepath.Dir(cp.source.Path), filepath.Base(file.path)))
 	if err != nil {
 		logger.Errorf("failed to open file %q, %v", file, err)
 
 		if err != nil {
-			_, file, line, _ := runtime.Caller(1)
-			fmt.Println("ERROR_: " + err.Error() + " " + file + " " + strconv.Itoa(line))
 			cp.errors <- copyError{
 				error: err,
 			}
