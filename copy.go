@@ -13,12 +13,13 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"runtime"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
 )
+
+const CFM_GQL_JSON = ".cfm.gql.json"
+const CFM_GQL_JSON_VARIATIONS = CFM_GQL_JSON + "/variations"
 
 // copyerror stores the error and the input object that generated the error.  Since it could be one of 4 types of input
 // we use pointers rather than having a different error struct for each input type
@@ -101,7 +102,6 @@ func (cp *BucketCopier) collectErrors() {
 	defer cp.ewg.Done()
 	for err := range cp.errors {
 		cp.errorList.errorList = append(cp.errorList.errorList, err)
-		fmt.Println("ERROR: " + err.Error())
 	}
 }
 
@@ -151,7 +151,7 @@ func (cp *BucketCopier) copyFile(file fileJob) {
 			}
 		}
 	} else {
-		fmt.Println("AWS Key:" + file.path)
+		fmt.Println("AWS Key:" + toVariationKey(file.path))
 		// Upload the file to S3.
 		input := cp.template
 		input.Key = aws.String(cp.dest.Path + "/" + file.path)
@@ -249,9 +249,19 @@ func (pb copyPb) updateBarListObjects(fileSize <-chan objectCounter) {
 	}
 }
 
-func checkAndReplaceSubstring(input, substring, replacement string) string {
-	if strings.Contains(input, substring) {
-		return strings.Replace(input, substring, replacement, -1)
+func fromVariationKey(input string) string {
+	if strings.Contains(input, CFM_GQL_JSON_VARIATIONS) {
+		return strings.Replace(input, CFM_GQL_JSON_VARIATIONS, "", -1)
+	}
+	return input
+}
+
+func toVariationKey(input string) string {
+	if !strings.HasSuffix(input, CFM_GQL_JSON) {
+		lastIndex := strings.LastIndexByte(input, '/')
+		if lastIndex > 0 {
+			return input[:lastIndex] + CFM_GQL_JSON_VARIATIONS + "/" + input[lastIndex+1:]
+		}
 	}
 	return input
 }
@@ -264,7 +274,7 @@ func (cp *BucketCopier) downloadObjects() func(object *s3.Object) {
 		defer cp.threads.release(1)
 		start := time.Now()
 		// Check File path and dir
-		theFilePath := cp.dest.Path + theSeparator + checkAndReplaceSubstring(*object.Key, ".cfm.gql.json/variations", "")
+		theFilePath := cp.dest.Path + theSeparator + fromVariationKey(*object.Key)
 
 		theDir := filepath.Dir(theFilePath)
 
@@ -278,8 +288,6 @@ func (cp *BucketCopier) downloadObjects() func(object *s3.Object) {
 					err = os.MkdirAll(theDir, os.ModePerm)
 				}
 				if err != nil {
-					_, file, line, _ := runtime.Caller(1)
-					fmt.Println("ERROR1: " + err.Error() + " " + file + " " + strconv.Itoa(line))
 					cp.errors <- copyError{error: err}
 					return
 				}
@@ -299,8 +307,6 @@ func (cp *BucketCopier) downloadObjects() func(object *s3.Object) {
 
 		theFile, err := os.Create(theFilePath)
 		if err != nil {
-			_, file, line, _ := runtime.Caller(1)
-			fmt.Println("ERROR2: " + err.Error() + " " + file + " " + strconv.Itoa(line))
 			cp.errors <- copyError{error: err}
 			return
 		}
@@ -312,8 +318,6 @@ func (cp *BucketCopier) downloadObjects() func(object *s3.Object) {
 
 		objectSize, err := cp.downloadManager.Download(theFile, &downloadInput)
 		if err != nil {
-			_, file, line, _ := runtime.Caller(1)
-			fmt.Println("ERROR3: " + err.Error() + " " + file + " " + strconv.Itoa(line))
 			cp.errors <- copyError{
 				error:    err,
 				download: &downloadInput,
@@ -325,8 +329,6 @@ func (cp *BucketCopier) downloadObjects() func(object *s3.Object) {
 
 		err = theFile.Close()
 		if err != nil {
-			_, file, line, _ := runtime.Caller(1)
-			fmt.Println("ERROR4: " + err.Error() + " " + file + " " + strconv.Itoa(line))
 			cp.errors <- copyError{error: err}
 			return
 		}
