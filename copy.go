@@ -145,6 +145,8 @@ func (cp *BucketCopier) copyFile(file fileJob) {
 		logger.Errorf("failed to open file %q, %v", file, err)
 
 		if err != nil {
+			_, file, line, _ := runtime.Caller(1)
+			fmt.Println("ERROR_: " + err.Error() + " " + file + " " + strconv.Itoa(line))
 			cp.errors <- copyError{
 				error: err,
 			}
