@@ -163,6 +163,7 @@ func (cp *BucketCopier) copyFile(file fileJob) {
 			input.StorageClass = aws.String(cp.optimizeStorageClass(file.info.Size()))
 		}
 		_, err = cp.uploadManager.Upload(&input)
+		fmt.Println("Upload done! " + *input.Key)
 
 		if err != nil {
 			cp.errors <- copyError{
