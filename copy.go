@@ -2,13 +2,7 @@ package main
 
 import (
 	"errors"
-	"net/url"
-	"os"
-	"path/filepath"
-	"strings"
-	"sync"
-	"time"
-
+	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -16,6 +10,14 @@ import (
 	"github.com/vbauerster/mpb/v5"
 	"github.com/vbauerster/mpb/v5/decor"
 	"go.uber.org/zap"
+	"net/url"
+	"os"
+	"path/filepath"
+	"runtime"
+	"strconv"
+	"strings"
+	"sync"
+	"time"
 )
 
 // copyerror stores the error and the input object that generated the error.  Since it could be one of 4 types of input
@@ -274,6 +276,8 @@ func (cp *BucketCopier) downloadObjects() func(object *s3.Object) {
 					err = os.MkdirAll(theDir, os.ModePerm)
 				}
 				if err != nil {
+					_, file, line, _ := runtime.Caller(1)
+					fmt.Println("ERROR: " + err.Error() + " " + file + " " + strconv.Itoa(line))
 					cp.errors <- copyError{error: err}
 					return
 				}
