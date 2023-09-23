@@ -101,7 +101,7 @@ func (cp *BucketCopier) collectErrors() {
 	defer cp.ewg.Done()
 	for err := range cp.errors {
 		cp.errorList.errorList = append(cp.errorList.errorList, err)
-		//fmt.Println("ERROR: " + err.Error())
+		fmt.Println("ERROR: " + err.Error())
 	}
 }
 
