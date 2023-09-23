@@ -262,7 +262,7 @@ func (cp *BucketCopier) downloadObjects() func(object *s3.Object) {
 		defer cp.threads.release(1)
 		start := time.Now()
 		// Check File path and dir
-		theFilePath := cp.dest.Path + theSeparator + checkAndReplaceSubstring(*object.Key, ".cfm.gql/variations", "")
+		theFilePath := cp.dest.Path + theSeparator + checkAndReplaceSubstring(*object.Key, ".cfm.gql.json/variations", "")
 
 		theDir := filepath.Dir(theFilePath)
 
